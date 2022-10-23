@@ -1,13 +1,10 @@
 package com.uday.spring.springjwt.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
@@ -29,10 +26,10 @@ public class UserManagmentConfig {
     }*/
 
     @Bean
-    public InMemoryUserDetailsManager userDetailsService(@Qualifier("passwordEncoder") PasswordEncoder passwordEncoder) {
+    public InMemoryUserDetailsManager inMemoryUser() {
         UserDetails user = User
                 .withUsername("username")   //warning: do not use withDefaultPasswordEncoder() in production
-                .password(passwordEncoder.encode("password"))
+                .password("{bcrypt}password")
                 .authorities("ADMIN")
                 .roles("ADMIN")
                 .build();

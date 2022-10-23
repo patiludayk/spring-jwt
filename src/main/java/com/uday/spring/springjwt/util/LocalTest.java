@@ -10,6 +10,6 @@ public class LocalTest {
         log.info("encoding of secret 'uday's-secret' : {}", secret);
 
         log.info("in byte[]: {}", TextCodec.BASE64.decode(secret));
-        log.info("in strig : {}", TextCodec.BASE64.decodeToString(secret));
+        log.info("in string : {}", TextCodec.BASE64.decodeToString(secret));
     }
 }

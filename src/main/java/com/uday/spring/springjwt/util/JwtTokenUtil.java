@@ -23,7 +23,7 @@ public class JwtTokenUtil implements Serializable {
     private static final long serialVersionUID = -1L;
 
 //    public static final long JWT_TOKEN_VALIDITY_IN_SECONDS = 15;
-    public static final long JWT_TOKEN_VALIDITY_IN_SECONDS = 10 * 1000000000;
+    public static final long JWT_TOKEN_VALIDITY_IN_SECONDS = 10 * 10;
 
     @Value("${jwt.secret}")
     private String secret;
@@ -44,7 +44,7 @@ public class JwtTokenUtil implements Serializable {
     }
     //for retrieveing any information from token we will need the secret key
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
+        return Jwts.parser().setSigningKey(TextCodec.BASE64.decode(secret)).parseClaimsJws(token).getBody();
     }
 
     //check if the token has expired
@@ -56,6 +56,7 @@ public class JwtTokenUtil implements Serializable {
     //generate token for user
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        //claims.put("", "");
         return doGenerateToken(claims, userDetails.getUsername());
     }
 
@@ -67,11 +68,12 @@ public class JwtTokenUtil implements Serializable {
     private String doGenerateToken(Map<String, Object> claims, String subject) {
 
         return Jwts.builder()
+                .setIssuer("patiludayk@gmail.com")
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY_IN_SECONDS * 1000))
-                .signWith(SignatureAlgorithm.HS512, secret).compact();
+                .signWith(SignatureAlgorithm.HS512, TextCodec.BASE64.decode(secret)).compact();
     }
 
     //validate token
@@ -84,7 +86,7 @@ public class JwtTokenUtil implements Serializable {
         Jws<Claims> jws = null;
         try {
             jws = Jwts.parser()
-                    .setSigningKey(secret)
+                    .setSigningKey(TextCodec.BASE64.decode(secret))
                     .parseClaimsJws(token);
         } catch (Exception e) {
             log.error("error occured: {}", e);
