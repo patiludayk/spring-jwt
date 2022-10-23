@@ -1,8 +1,12 @@
 package com.uday.spring.springjwt.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.impl.TextCodec;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -14,10 +18,12 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Component
+@Slf4j
 public class JwtTokenUtil implements Serializable {
     private static final long serialVersionUID = -1L;
 
-    public static final long JWT_TOKEN_VALIDITY = 10;
+//    public static final long JWT_TOKEN_VALIDITY_IN_SECONDS = 15;
+    public static final long JWT_TOKEN_VALIDITY_IN_SECONDS = 10 * 1000000000;
 
     @Value("${jwt.secret}")
     private String secret;
@@ -60,8 +66,11 @@ public class JwtTokenUtil implements Serializable {
     //compaction of the JWT to a URL-safe string
     private String doGenerateToken(Map<String, Object> claims, String subject) {
 
-        return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY_IN_SECONDS * 1000))
                 .signWith(SignatureAlgorithm.HS512, secret).compact();
     }
 
@@ -69,5 +78,18 @@ public class JwtTokenUtil implements Serializable {
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    public Jwt parse(String token) {
+        Jws<Claims> jws = null;
+        try {
+            jws = Jwts.parser()
+                    .setSigningKey(secret)
+                    .parseClaimsJws(token);
+        } catch (Exception e) {
+            log.error("error occured: {}", e);
+            throw new RuntimeException(e);
+        }
+        return jws;
     }
 }
