@@ -37,7 +37,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain allowPermissibleContext(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers("/authenticate").permitAll()
-                .antMatchers("/", "/**/api-docs", "/aboutme", "/register").permitAll()
+                .antMatchers("/", "/**/api-docs", "/aboutme", "/register", "/h2-console/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/parse").hasAnyRole("ADMIN")
                 .anyRequest()
                 .authenticated()
@@ -52,6 +52,8 @@ public class SecurityConfiguration {
                 .and()
                 .csrf()
                 .disable();
+
+        http.headers().frameOptions().disable(); //INFO: for H2 console
 
         http.addFilterBefore(requestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
